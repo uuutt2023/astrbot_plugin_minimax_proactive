@@ -52,6 +52,14 @@ class LLMProtocol(Protocol):
     def available(self) -> bool: ...
 
     async def chat(self, prompt: str, history: list, system_prompt: str) -> str: ...
+    
+    async def describe_image(
+        self,
+        image_url: str,
+        prompt: str,
+        session_id: str | None = None,
+        provider_name: str | None = None,
+    ) -> str | None: ...
 
 
 class MessageSenderProtocol(Protocol):
@@ -80,6 +88,9 @@ class ContextProtocol(Protocol):
 class ConfigProviderProtocol(Protocol):
     """配置提供者协议"""
 
+    @property
+    def llm_settings(self) -> dict: ...
+    
     def get_session_config(self, session_id: str) -> dict | None: ...
 
 

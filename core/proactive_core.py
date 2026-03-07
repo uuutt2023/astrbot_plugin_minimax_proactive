@@ -13,6 +13,7 @@ import orjson
 import random
 import time
 from datetime import datetime
+from typing import Any
 
 from astrbot.api import logger
 
@@ -26,6 +27,8 @@ from ..src.constants import (
 )
 from ..src.decorators import error_handler, log, timed
 from ..services import ProactiveServices
+from ..prompts import DEFAULT_PRIVATE_PROACTIVE, DEFAULT_GROUP_PROACTIVE, DEFAULT_IMAGE_DESC
+from ..libs import format_log, sanitize_history, replace_image_with_text, is_quiet_time
 
 
 class ProactiveCore:
