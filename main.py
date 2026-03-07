@@ -95,7 +95,7 @@ class MiniMaxProactiveChatPlugin(Star):
         # 提醒管理器
         self._reminder_mgr = ReminderManager(self, self._scheduler)
 
-        logger.info("[MiniMaxProactive] 插件已创建")
+        logger.info("[MiniMaxProactive] [INFO] [__init__] 插件已创建")
 
     # ==================== 生命周期 ====================
 
@@ -110,7 +110,7 @@ class MiniMaxProactiveChatPlugin(Star):
         # 检查API配置
         if not self._llm.is_configured:
             logger.warning(
-                "[MiniMaxProactive] 请配置 MiniMax API Key 或启用 AstrBot 内置 LLM"
+                "[MiniMaxProactive] [WARNING] [initialize] 请配置 MiniMax API Key 或启用 AstrBot 内置 LLM"
             )
 
         # 启动调度器并恢复任务
