@@ -1,0 +1,9 @@
+name: astrbot_plugin_minimax_proactive
+display_name: MiniMax 主动对话
+desc: MiniMax 主动对话插件 - 使用MiniMax API进行主动对话，支持私聊/群聊/定时触发/沉默触发/自动触发
+version: v1.2.0
+author: uuutt2023
+repo: https://github.com/uuutt2023/astrbot_plugin_minimax_proactive
+support_platforms:
+  - aiocqhttp
+astrbot_version: ">=4.18"

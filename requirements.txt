@@ -1,0 +1,6 @@
+# MiniMax Proactive Plugin requirements
+# 插件额外依赖，AstrBot 自带依赖无需声明
+apscheduler
+tenacity
+orjson
+httpx

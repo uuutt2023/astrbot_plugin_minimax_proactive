@@ -1,0 +1,512 @@
+{
+    "enable_proactive_chat": {
+        "name": "开启主动对话",
+        "description": "是否启用主动对话功能。关闭后机器人不会主动发起对话",
+        "type": "bool",
+        "default": true
+    },
+    "enable_reminder": {
+        "name": "开启提醒功能",
+        "description": "是否启用提醒功能，包括LLM工具和指令(/mpro add等)",
+        "type": "bool",
+        "default": true
+    },
+    "debug_mode": {
+        "name": "调试模式",
+        "description": "启用详细日志输出，方便排查问题",
+        "type": "bool",
+        "default": false
+    },
+    "use_astrbot_provider": {
+        "name": "选择 LLM 提供商",
+        "description": "选择使用的模型提供商",
+        "type": "string",
+        "_special": "select_provider"
+    },
+    "minimax_api_key": {
+        "name": "MiniMax API Key",
+        "description": "MiniMax API密钥，在MiniMax开放平台获取",
+        "type": "string",
+        "default": ""
+    },
+    "minimax_base_url": {
+        "name": "API 地址",
+        "description": "MiniMax API接口地址",
+        "type": "string",
+        "default": "https://api.minimax.chat/v1"
+    },
+    "minimax_model": {
+        "name": "模型名称",
+        "description": "使用的模型名称",
+        "type": "string",
+        "default": "abab6.5s-chat"
+    },
+    "minimax_temperature": {
+        "name": "Temperature",
+        "description": "生成随机性，0-1之间，值越大越随机",
+        "type": "float",
+        "default": 0.7
+    },
+    "minimax_max_tokens": {
+        "name": "最大 Token 数",
+        "description": "最大生成Token数",
+        "type": "int",
+        "default": 4096
+    },
+    "private_enable": {
+        "name": "启用私聊主动对话",
+        "description": "是否启用私聊主动对话功能",
+        "type": "bool",
+        "default": false
+    },
+    "private_prompt": {
+        "name": "主动对话提示词",
+        "description": "触发主动对话时的提示词。支持 {{unanswered_count}}（未回复次数）和 {{current_time}}（当前时间）变量",
+        "type": "text",
+        "default": "请用简短亲切的方式和用户聊天。你可以主动发起话题，但不要太频繁。{{unanswered_count}}表示连续未回复的次数。"
+    },
+    "private_use_minimax": {
+        "name": "使用 MiniMax 回复",
+        "description": "用 MiniMax API 替换默认对话模型，所有私聊消息都使用 MiniMax 回复",
+        "type": "bool",
+        "default": false
+    },
+    "private_read_air": {
+        "name": "启用读空气",
+        "description": "使用 LLM 判断是否需要回复，减少不必要的回复",
+        "type": "bool",
+        "default": false
+    },
+    "private_read_air_provider": {
+        "name": "读空气模型",
+        "description": "选择读空气功能使用的模型提供商",
+        "type": "string",
+        "_special": "select_provider"
+    },
+    "private_read_air_prompt": {
+        "name": "读空气提示词",
+        "description": "判断是否需要回复的提示词",
+        "type": "text",
+        "default": "你是一个聊天场合判断助手。判断用户的消息是否需要回复。规则：1. 如果是@机器人、提及机器人名字、或者直接对话，需要回复 2. 如果是闲聊且内容与机器人无关，不需要回复 3. 如果是疑问句或需要机器人提供信息，需要回复 4. 如果是单纯的表情、符号等，不需要回复。请直接输出 YES 表示需要回复，NO 表示不需要回复，不要输出其他内容。"
+    },
+    "private_min_interval": {
+        "name": "最小触发间隔（分钟）",
+        "description": "两次主动对话之间的最小时间间隔",
+        "type": "int",
+        "default": 30
+    },
+    "private_max_interval": {
+        "name": "最大触发间隔（分钟）",
+        "description": "两次主动对话之间的最大时间间隔",
+        "type": "int",
+        "default": 900
+    },
+    "private_max_times": {
+        "name": "最大主动次数",
+        "description": "连续未回复时最多主动对话的次数，0表示不限制",
+        "type": "int",
+        "default": 3
+    },
+    "private_quiet_hours": {
+        "name": "免打扰时段",
+        "description": "不主动发起对话的时间段。格式: 1-7表示每天凌晨1点到早上7点，22-6表示22点到次日6点",
+        "type": "string",
+        "default": "1-7"
+    },
+    "private_auto_trigger": {
+        "name": "启用自动触发",
+        "description": "机器人启动后首次收到消息时自动触发对话",
+        "type": "bool",
+        "default": false
+    },
+    "private_auto_delay": {
+        "name": "首次触发延迟（分钟）",
+        "description": "机器人启动后等待多少分钟再首次触发",
+        "type": "int",
+        "default": 5
+    },
+    "private_tts": {
+        "name": "启用 TTS 语音",
+        "description": "将回复转换为语音发送",
+        "type": "bool",
+        "default": false
+    },
+    "private_tts_with_text": {
+        "name": "TTS 同时发送文本",
+        "description": "发送语音时是否同时发送原文文本",
+        "type": "bool",
+        "default": true
+    },
+    "private_t2i": {
+        "name": "启用文转图",
+        "description": "将长消息转换为图片发送",
+        "type": "bool",
+        "default": false
+    },
+    "private_t2i_threshold": {
+        "name": "文转图触发阈值",
+        "description": "超过此字符数时转换为图片发送",
+        "type": "int",
+        "default": 500
+    },
+    "private_image_desc": {
+        "name": "启用表情包转述",
+        "description": "使用 LLM 描述消息中的表情包/图片内容，让对话更自然",
+        "type": "bool",
+        "default": false
+    },
+    "private_image_desc_provider": {
+        "name": "表情包转述模型",
+        "description": "选择表情包转述使用的模型提供商",
+        "type": "string",
+        "_special": "select_provider"
+    },
+    "private_image_desc_prompt": {
+        "name": "表情包转述提示词",
+        "description": "描述表情包/图片内容的提示词",
+        "type": "text",
+        "default": "你是一个图片描述助手。请仔细观察图片中的内容，并用简洁生动的语言描述图片中的关键信息。描述要求：1. 重点描述图片的主体内容、人物动作、表情、场景等 2. 如果是表情包（meme），请描述出其中的幽默元素或含义 3. 如果是文字图片，请提取并描述文字内容 4. 保持描述简洁，不超过100字 5. 用口语化的方式描述，让聊天更自然。请直接输出图片描述，不要添加任何前缀或解释。"
+    },
+    "group_enable": {
+        "name": "启用群聊主动对话",
+        "description": "是否启用群聊主动对话功能",
+        "type": "bool",
+        "default": false
+    },
+    "group_prompt": {
+        "name": "主动对话提示词",
+        "description": "触发主动对话时的提示词。支持 {{unanswered_count}}（未回复次数）和 {{current_time}}（当前时间）变量",
+        "type": "text",
+        "default": "请用简短亲切的方式在群里聊天。你可以主动发起话题，但不要太频繁。{{unanswered_count}}表示连续未回复的次数。"
+    },
+    "group_use_minimax": {
+        "name": "使用 MiniMax 回复",
+        "description": "用 MiniMax API 替换默认对话模型，所有群消息都使用 MiniMax 回复",
+        "type": "bool",
+        "default": false
+    },
+    "group_read_air": {
+        "name": "启用读空气",
+        "description": "使用 LLM 判断是否需要回复，适合群聊减少刷屏",
+        "type": "bool",
+        "default": false
+    },
+    "group_read_air_provider": {
+        "name": "读空气模型",
+        "description": "选择读空气功能使用的模型提供商",
+        "type": "string",
+        "_special": "select_provider"
+    },
+    "group_read_air_prompt": {
+        "name": "读空气提示词",
+        "description": "判断是否需要回复的提示词",
+        "type": "text",
+        "default": "你是一个聊天场合判断助手。判断用户的消息是否需要回复。规则：1. 如果是@机器人、提及机器人名字、或者直接对话，需要回复 2. 如果是闲聊且内容与机器人无关，不需要回复 3. 如果是疑问句或需要机器人提供信息，需要回复 4. 如果是单纯的表情、符号等，不需要回复。请直接输出 YES 表示需要回复，NO 表示不需要回复，不要输出其他内容。"
+    },
+    "group_min_interval": {
+        "name": "最小触发间隔（分钟）",
+        "description": "两次主动对话之间的最小时间间隔",
+        "type": "int",
+        "default": 30
+    },
+    "group_max_interval": {
+        "name": "最大触发间隔（分钟）",
+        "description": "两次主动对话之间的最大时间间隔",
+        "type": "int",
+        "default": 900
+    },
+    "group_max_times": {
+        "name": "最大主动次数",
+        "description": "连续未回复时最多主动对话的次数，0表示不限制",
+        "type": "int",
+        "default": 3
+    },
+    "group_quiet_hours": {
+        "name": "免打扰时段",
+        "description": "不主动发起对话的时间段。格式: 1-7表示每天凌晨1点到早上7点，22-6表示22点到次日6点",
+        "type": "string",
+        "default": "1-7"
+    },
+    "group_auto_trigger": {
+        "name": "启用自动触发",
+        "description": "机器人启动后首次收到群消息时自动触发对话",
+        "type": "bool",
+        "default": false
+    },
+    "group_auto_delay": {
+        "name": "首次触发延迟（分钟）",
+        "description": "机器人启动后等待多少分钟再首次触发",
+        "type": "int",
+        "default": 5
+    },
+    "group_idle_trigger": {
+        "name": "沉默触发时间（分钟）",
+        "description": "群聊沉默多少分钟后触发主动对话",
+        "type": "int",
+        "default": 10
+    },
+    "group_tts": {
+        "name": "启用 TTS 语音",
+        "description": "将回复转换为语音发送",
+        "type": "bool",
+        "default": false
+    },
+    "group_tts_with_text": {
+        "name": "TTS 同时发送文本",
+        "description": "发送语音时是否同时发送原文文本",
+        "type": "bool",
+        "default": true
+    },
+    "group_t2i": {
+        "name": "启用文转图",
+        "description": "将长消息转换为图片发送",
+        "type": "bool",
+        "default": false
+    },
+    "group_t2i_threshold": {
+        "name": "文转图触发阈值",
+        "description": "超过此字符数时转换为图片发送",
+        "type": "int",
+        "default": 500
+    },
+    "group_image_desc": {
+        "name": "启用表情包转述",
+        "description": "使用 LLM 描述消息中的表情包/图片内容，让对话更自然",
+        "type": "bool",
+        "default": false
+    },
+    "group_image_desc_provider": {
+        "name": "表情包转述模型",
+        "description": "选择表情包转述使用的模型提供商",
+        "type": "string",
+        "_special": "select_provider"
+    },
+    "group_image_desc_prompt": {
+        "name": "表情包转述提示词",
+        "description": "描述表情包/图片内容的提示词",
+        "type": "text",
+        "default": "你是一个图片描述助手。请仔细观察图片中的内容，并用简洁生动的语言描述图片中的关键信息。描述要求：1. 重点描述图片的主体内容、人物动作、表情、场景等 2. 如果是表情包（meme），请描述出其中的幽默元素或含义 3. 如果是文字图片，请提取并描述文字内容 4. 保持描述简洁，不超过100字 5. 用口语化的方式描述，让聊天更自然。请直接输出图片描述，不要添加任何前缀或解释。"
+    },
+    "private_sessions": {
+        "name": "私聊用户列表",
+        "description": "单独配置特定私聊用户的主动对话",
+        "type": "template_list",
+        "templates": {
+            "private_session": {
+                "name": "私聊用户",
+                "items": {
+                    "session_id": {
+                        "name": "用户 ID",
+                        "description": "目标用户的ID",
+                        "type": "string",
+                        "default": ""
+                    },
+                    "session_name": {
+                        "name": "显示名称",
+                        "description": "用于显示的名称，方便识别",
+                        "type": "string",
+                        "default": ""
+                    },
+                    "enable": {
+                        "name": "启用",
+                        "description": "是否启用此用户的主动对话",
+                        "type": "bool",
+                        "default": false
+                    },
+                    "prompt": {
+                        "name": "提示词",
+                        "description": "对话提示词",
+                        "type": "text",
+                        "default": ""
+                    },
+                    "use_minimax": {
+                        "name": "使用 MiniMax",
+                        "description": "使用 MiniMax 回复",
+                        "type": "bool",
+                        "default": false
+                    },
+                    "read_air": {
+                        "name": "读空气",
+                        "description": "启用读空气功能",
+                        "type": "bool",
+                        "default": false
+                    },
+                    "min_interval": {
+                        "name": "最小间隔",
+                        "description": "最小间隔（分钟）",
+                        "type": "int",
+                        "default": 30
+                    },
+                    "max_interval": {
+                        "name": "最大间隔",
+                        "description": "最大间隔（分钟）",
+                        "type": "int",
+                        "default": 900
+                    },
+                    "max_times": {
+                        "name": "最大次数",
+                        "description": "最大主动次数",
+                        "type": "int",
+                        "default": 3
+                    },
+                    "quiet_hours": {
+                        "name": "免打扰",
+                        "description": "免打扰时段",
+                        "type": "string",
+                        "default": "1-7"
+                    },
+                    "auto_trigger": {
+                        "name": "自动触发",
+                        "description": "启用自动触发",
+                        "type": "bool",
+                        "default": false
+                    },
+                    "auto_delay": {
+                        "name": "触发延迟",
+                        "description": "首次触发延迟（分钟）",
+                        "type": "int",
+                        "default": 5
+                    },
+                    "tts": {
+                        "name": "TTS",
+                        "description": "启用 TTS",
+                        "type": "bool",
+                        "default": false
+                    },
+                    "tts_with_text": {
+                        "name": "TTS带文本",
+                        "description": "TTS同时发送文本",
+                        "type": "bool",
+                        "default": true
+                    },
+                    "t2i": {
+                        "name": "文转图",
+                        "description": "启用文转图",
+                        "type": "bool",
+                        "default": false
+                    },
+                    "t2i_threshold": {
+                        "name": "阈值",
+                        "description": "文转图字符阈值",
+                        "type": "int",
+                        "default": 500
+                    }
+                }
+            }
+        }
+    },
+    "group_sessions": {
+        "name": "群聊列表",
+        "description": "单独配置特定群聊的主动对话",
+        "type": "template_list",
+        "templates": {
+            "group_session": {
+                "name": "群聊",
+                "items": {
+                    "session_id": {
+                        "name": "群 ID",
+                        "description": "目标群的ID",
+                        "type": "string",
+                        "default": ""
+                    },
+                    "session_name": {
+                        "name": "显示名称",
+                        "description": "用于显示的名称，方便识别",
+                        "type": "string",
+                        "default": ""
+                    },
+                    "enable": {
+                        "name": "启用",
+                        "description": "是否启用此群的主动对话",
+                        "type": "bool",
+                        "default": false
+                    },
+                    "prompt": {
+                        "name": "提示词",
+                        "description": "对话提示词",
+                        "type": "text",
+                        "default": ""
+                    },
+                    "use_minimax": {
+                        "name": "使用 MiniMax",
+                        "description": "使用 MiniMax 回复",
+                        "type": "bool",
+                        "default": false
+                    },
+                    "read_air": {
+                        "name": "读空气",
+                        "description": "启用读空气功能",
+                        "type": "bool",
+                        "default": false
+                    },
+                    "min_interval": {
+                        "name": "最小间隔",
+                        "description": "最小间隔（分钟）",
+                        "type": "int",
+                        "default": 30
+                    },
+                    "max_interval": {
+                        "name": "最大间隔",
+                        "description": "最大间隔（分钟）",
+                        "type": "int",
+                        "default": 900
+                    },
+                    "max_times": {
+                        "name": "最大次数",
+                        "description": "最大主动次数",
+                        "type": "int",
+                        "default": 3
+                    },
+                    "quiet_hours": {
+                        "name": "免打扰",
+                        "description": "免打扰时段",
+                        "type": "string",
+                        "default": "1-7"
+                    },
+                    "auto_trigger": {
+                        "name": "自动触发",
+                        "description": "启用自动触发",
+                        "type": "bool",
+                        "default": false
+                    },
+                    "auto_delay": {
+                        "name": "触发延迟",
+                        "description": "首次触发延迟（分钟）",
+                        "type": "int",
+                        "default": 5
+                    },
+                    "idle_trigger": {
+                        "name": "沉默触发",
+                        "description": "沉默触发时间（分钟）",
+                        "type": "int",
+                        "default": 10
+                    },
+                    "tts": {
+                        "name": "TTS",
+                        "description": "启用 TTS",
+                        "type": "bool",
+                        "default": false
+                    },
+                    "tts_with_text": {
+                        "name": "TTS带文本",
+                        "description": "TTS同时发送文本",
+                        "type": "bool",
+                        "default": true
+                    },
+                    "t2i": {
+                        "name": "文转图",
+                        "description": "启用文转图",
+                        "type": "bool",
+                        "default": false
+                    },
+                    "t2i_threshold": {
+                        "name": "阈值",
+                        "description": "文转图字符阈值",
+                        "type": "int",
+                        "default": 500
+                    }
+                }
+            }
+        }
+    }
+}
