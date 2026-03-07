@@ -274,7 +274,7 @@ def require_session_config(session_param: str = "session_id"):
         async def async_wrapper(*args, **kwargs):
             # 获取 self
             self_obj = args[0] if args else None
-            if not hasattr(self_obj, "_services"):
+            if self_obj is None or not hasattr(self_obj, "_services"):
                 return await func(*args, **kwargs)
 
             # 获取 session_id

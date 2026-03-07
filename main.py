@@ -425,10 +425,11 @@ class MiniMaxProactiveChatPlugin(Star):
                     t2i = cfg.get(MessageKeys.T2I_SETTINGS, {})
                     await self._sender.send(session_id, response, tts, t2i)
 
-                if hasattr(request, "stop_propagation"):
-                    request.stop_propagation()
-                elif hasattr(request, "terminated"):
-                    request.terminated = True
+                if request is not None:
+                    if hasattr(request, "stop_propagation"):
+                        request.stop_propagation()
+                    elif hasattr(request, "terminated"):
+                        request.terminated = True
 
                 logger.info(f"[MiniMaxProactive] LLM对话完成: {session_id}")
         except Exception as e:
@@ -494,10 +495,11 @@ class MiniMaxProactiveChatPlugin(Star):
             should_respond = "YES" in result or "应该" in result or "需要" in result
 
             if not should_respond:
-                if hasattr(request, "stop_propagation"):
-                    request.stop_propagation()
-                elif hasattr(request, "terminated"):
-                    request.terminated = True
+                if request is not None:
+                    if hasattr(request, "stop_propagation"):
+                        request.stop_propagation()
+                    elif hasattr(request, "terminated"):
+                        request.terminated = True
 
                 logger.info(f"[MiniMaxProactive] 读空气判断不需要回复: {session_id}")
             else:

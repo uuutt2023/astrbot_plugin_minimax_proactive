@@ -230,9 +230,9 @@ class LLMCaller:
         prompt: str,
         history: list[dict[str, Any]] | None,
         system_prompt: str | None,
-    ) -> list[dict[str, str]]:
+    ) -> list[dict[str, Any]]:
         """构建消息列表"""
-        messages: list[dict[str, str]] = []
+        messages: list[dict[str, Any]] = []
 
         if system_prompt:
             messages.append({"role": "system", "content": system_prompt})
