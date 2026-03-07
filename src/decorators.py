@@ -360,13 +360,17 @@ class DebugLog:
     可以通过实例方法设置debug_mode来控制输出。
     """
     
-    _instance = None
-    _debug = False
+    _instance: "DebugLog | None" = None
+    _debug: bool = False
     
-    def __new__(cls):
+    def __new__(cls) -> "DebugLog":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
+    
+    def __init__(self) -> None:
+        """初始化 - 单例模式下只执行一次"""
+        pass
     
     @property
     def enabled(self) -> bool:
