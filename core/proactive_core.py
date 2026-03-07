@@ -31,6 +31,10 @@ from ..prompts import DEFAULT_PRIVATE_PROACTIVE, DEFAULT_GROUP_PROACTIVE, DEFAUL
 from ..libs import format_log, sanitize_history, replace_image_with_text, is_quiet_time
 
 
+# 图片描述缓存 - 避免重复调用 LLM
+_IMAGE_CAPTION_CACHE: dict[str, str] = {}
+
+
 class ProactiveCore:
     """主动对话核心逻辑 - 使用依赖注入
 
@@ -42,6 +46,8 @@ class ProactiveCore:
         self._message_times: dict[str, float] = {}
         self._logged: set[str] = set()
         self._lock = asyncio.Lock()  # 异步锁
+        # 图片描述超时时间（秒）
+        self._image_caption_timeout = 30
 
     @log("处理收到消息")
     async def handle_message(self, event) -> None:
@@ -265,6 +271,8 @@ class ProactiveCore:
         Returns:
             处理后的历史消息列表
         """
+        global _IMAGE_CAPTION_CACHE
+        
         from astrbot.api import logger
         from ..libs import replace_image_with_text
         from ..prompts import DEFAULT_IMAGE_DESC
@@ -274,6 +282,9 @@ class ProactiveCore:
         
         # 获取 LLM
         llm = self._services.llm
+        
+        # 获取超时设置
+        timeout = image_desc_cfg.get("image_desc_timeout", self._image_caption_timeout)
         
         processed_history = []
         
@@ -287,13 +298,33 @@ class ProactiveCore:
                     image_url = msg.get("image_url") or msg.get("image") or msg.get("url")
                     
                     if image_url:
-                        # 调用 LLM 描述图片
-                        logger.info("[MiniMaxProactive] 正在描述图片...")
-                        description = await llm.describe_image(
-                            image_url=image_url,
-                            prompt=image_desc_prompt,
-                            session_id=session_id
-                        )
+                        description = None
+                        
+                        # 检查缓存
+                        if image_url in _IMAGE_CAPTION_CACHE:
+                            description = _IMAGE_CAPTION_CACHE[image_url]
+                            logger.info(f"[MiniMaxProactive] 命中图片描述缓存: {image_url[:30]}...")
+                        else:
+                            # 调用 LLM 描述图片（带超时控制）
+                            logger.info("[MiniMaxProactive] 正在描述图片...")
+                            try:
+                                description = await asyncio.wait_for(
+                                    llm.describe_image(
+                                        image_url=image_url,
+                                        prompt=image_desc_prompt,
+                                        session_id=session_id
+                                    ),
+                                    timeout=timeout
+                                )
+                                
+                                # 缓存结果
+                                if description:
+                                    _IMAGE_CAPTION_CACHE[image_url] = description
+                                    logger.info(f"[MiniMaxProactive] 缓存图片描述: {image_url[:30]}...")
+                            except asyncio.TimeoutError:
+                                logger.warning(f"[MiniMaxProactive] 图片转述超时，超过 {timeout} 秒")
+                            except Exception as e:
+                                logger.error(f"[MiniMaxProactive] 图片转述失败: {e}")
                         
                         if description:
                             # 替换表情包标记为转述文本
