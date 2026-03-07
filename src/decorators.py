@@ -41,11 +41,11 @@ def log(message: str = "", level: str = "info"):
             async def async_wrapper(*args, **kwargs):
                 msg = message or f"执行 {func.__name__}"
                 log_func = getattr(logger, level, logger.info)
-                log_func(f"[MiniMaxProactive] {msg}")
+                log_func(f"[MiniMaxProactive] [{level.upper()}] {func.__name__} {msg}")
                 try:
                     return await func(*args, **kwargs)
                 except Exception as e:
-                    logger.error(f"[MiniMaxProactive] {msg} 失败: {e}")
+                    logger.error(f"[MiniMaxProactive] [ERROR] {func.__name__} {msg} 失败: {e}")
                     raise
 
             return async_wrapper

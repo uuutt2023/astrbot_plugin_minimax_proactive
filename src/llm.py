@@ -50,11 +50,11 @@ class LLMCaller:
         get_debug_logger().enabled = self._debug
         
         if self._debug:
-            logger.info("[MiniMaxProactive][DEBUG] LLMCaller初始化:")
-            logger.info(f"[MiniMaxProactive][DEBUG]   - selected_provider: {self._config.get('selected_provider', '')}")
-            logger.info(f"[MiniMaxProactive][DEBUG]   - use_minimax_for_response: {self._config.get('use_minimax_for_response', False)}")
-            logger.info(f"[MiniMaxProactive][DEBUG]   - debug_mode: {self._debug}")
-            logger.info(f"[MiniMaxProactive][DEBUG]   - minimax配置: api_key={'已配置' if self._api_key else '未配置'}, model={self._model}")
+            logger.info("[MiniMaxProactive] [DEBUG] [LLMCaller.__init__] 初始化:")
+            logger.info(f"[MiniMaxProactive] [DEBUG] [LLMCaller.__init__] selected_provider: {self._config.get('selected_provider', '')}")
+            logger.info(f"[MiniMaxProactive] [DEBUG] [LLMCaller.__init__] use_minimax_for_response: {self._config.get('use_minimax_for_response', False)}")
+            logger.info(f"[MiniMaxProactive] [DEBUG] [LLMCaller.__init__] debug_mode: {self._debug}")
+            logger.info(f"[MiniMaxProactive] [DEBUG] [LLMCaller.__init__] minimax配置: api_key={'已配置' if self._api_key else '未配置'}, model={self._model}")
 
     @property
     def debug_mode(self) -> bool:
@@ -78,10 +78,10 @@ class LLMCaller:
         result = has_provider and not use_minimax
         
         if self._debug:
-            logger.info("[MiniMaxProactive][DEBUG] use_astrbot_provider计算:")
-            logger.info(f"[MiniMaxProactive][DEBUG]   - has_provider: {has_provider}")
-            logger.info(f"[MiniMaxProactive][DEBUG]   - use_minimax: {use_minimax}")
-            logger.info(f"[MiniMaxProactive][DEBUG]   - result: {result}")
+            logger.info("[MiniMaxProactive] [DEBUG] [use_astrbot_provider] 计算:")
+            logger.info(f"[MiniMaxProactive] [DEBUG] [use_astrbot_provider] has_provider: {has_provider}")
+            logger.info(f"[MiniMaxProactive] [DEBUG] [use_astrbot_provider] use_minimax: {use_minimax}")
+            logger.info(f"[MiniMaxProactive] [DEBUG] [use_astrbot_provider] result: {result}")
         
         return result
     
@@ -138,20 +138,20 @@ class LLMCaller:
             LLM 回复文本
         """
         if self._debug:
-            logger.info("[MiniMaxProactive][DEBUG] chat() 调用:")
-            logger.info(f"[MiniMaxProactive][DEBUG]   - use_astrbot_provider: {self.use_astrbot_provider}")
-            logger.info(f"[MiniMaxProactive][DEBUG]   - use_minimax_for_response: {self.use_minimax_for_response}")
-            logger.info(f"[MiniMaxProactive][DEBUG]   - is_minimax_configured: {self.is_minimax_configured}")
+            logger.info("[MiniMaxProactive] [DEBUG] [chat] 调用:")
+            logger.info(f"[MiniMaxProactive] [DEBUG] [chat] use_astrbot_provider: {self.use_astrbot_provider}")
+            logger.info(f"[MiniMaxProactive] [DEBUG] [chat] use_minimax_for_response: {self.use_minimax_for_response}")
+            logger.info(f"[MiniMaxProactive] [DEBUG] [chat] is_minimax_configured: {self.is_minimax_configured}")
         
         if self.use_astrbot_provider:
             if self._debug:
-                logger.info(f"[MiniMaxProactive][DEBUG] 使用 AstrBot Provider: {self.selected_provider}")
+                logger.info(f"[MiniMaxProactive] [DEBUG] [chat] 使用 AstrBot Provider: {self.selected_provider}")
             return await self._chat_with_astrbot(
                 prompt, history, system_prompt, session_id
             )
         else:
             if self._debug:
-                logger.info(f"[MiniMaxProactive][DEBUG] 使用 MiniMax API: {self._model}")
+                logger.info(f"[MiniMaxProactive] [DEBUG] [chat] 使用 MiniMax API: {self._model}")
             return await self._chat_with_minimax(prompt, history, system_prompt)
 
     async def _chat_with_astrbot(
@@ -172,7 +172,7 @@ class LLMCaller:
                 provider = self._context.get_using_provider(session_id or "")
 
             if not provider:
-                logger.warning("[MiniMaxProactive] 未找到可用的 LLM Provider")
+                logger.warning("[MiniMaxProactive] [WARNING] [_chat_with_astrbot] 未找到可用的 LLM Provider")
                 raise ValueError("未配置 LLM Provider")
 
             # 构建消息列表
