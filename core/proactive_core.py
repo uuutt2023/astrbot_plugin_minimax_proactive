@@ -32,7 +32,10 @@ from ..libs import format_log, sanitize_history, replace_image_with_text, is_qui
 
 
 # 图片描述缓存 - 避免重复调用 LLM
-_IMAGE_CAPTION_CACHE: dict[str, str] = {}
+# 格式: {image_url: {"caption": 描述, "timestamp": 时间戳}}
+_IMAGE_CAPTION_CACHE: dict[str, dict] = {}
+# 缓存过期时间：一周（7天）
+_IMAGE_CACHE_EXPIRE_SECONDS = 7 * 24 * 60 * 60
 
 
 class ProactiveCore:
@@ -48,6 +51,56 @@ class ProactiveCore:
         self._lock = asyncio.Lock()  # 异步锁
         # 图片描述超时时间（秒）
         self._image_caption_timeout = 30
+        # 加载持久化的图片缓存
+        self._load_image_cache()
+    
+    def _load_image_cache(self) -> None:
+        """加载持久化的图片缓存"""
+        global _IMAGE_CAPTION_CACHE
+        try:
+            storage = self._services.storage
+            cache_data = storage.get_sync("image_caption_cache", {})
+            if cache_data:
+                now = time.time()
+                # 清理过期缓存
+                valid_cache = {}
+                for url, data in cache_data.items():
+                    if isinstance(data, dict):
+                        timestamp = data.get("timestamp", 0)
+                        if now - timestamp < _IMAGE_CACHE_EXPIRE_SECONDS:
+                            valid_cache[url] = data
+                    elif isinstance(data, str):
+                        # 兼容旧格式
+                        valid_cache[url] = {"caption": data, "timestamp": now}
+                _IMAGE_CAPTION_CACHE = valid_cache
+                # 保存清理后的缓存
+                storage.set_sync("image_caption_cache", valid_cache)
+        except Exception as e:
+            from astrbot.api import logger
+            logger.warning(f"[MiniMaxProactive] 加载图片缓存失败: {e}")
+    
+    def _save_image_cache(self) -> None:
+        """保存图片缓存到持久化存储"""
+        try:
+            storage = self._services.storage
+            storage.set_sync("image_caption_cache", _IMAGE_CAPTION_CACHE)
+        except Exception as e:
+            from astrbot.api import logger
+            logger.warning(f"[MiniMaxProactive] 保存图片缓存失败: {e}")
+    
+    def _cleanup_expired_cache(self) -> None:
+        """清理过期缓存"""
+        global _IMAGE_CAPTION_CACHE
+        now = time.time()
+        expired_keys = [
+            url for url, data in _IMAGE_CAPTION_CACHE.items()
+            if now - data.get("timestamp", 0) >= _IMAGE_CACHE_EXPIRE_SECONDS
+        ]
+        for key in expired_keys:
+            del _IMAGE_CAPTION_CACHE[key]
+        
+        if expired_keys:
+            self._save_image_cache()
 
     @log("处理收到消息")
     async def handle_message(self, event) -> None:
@@ -302,7 +355,8 @@ class ProactiveCore:
                         
                         # 检查缓存
                         if image_url in _IMAGE_CAPTION_CACHE:
-                            description = _IMAGE_CAPTION_CACHE[image_url]
+                            cache_entry = _IMAGE_CAPTION_CACHE[image_url]
+                            description = cache_entry.get("caption") if isinstance(cache_entry, dict) else cache_entry
                             logger.info(f"[MiniMaxProactive] 命中图片描述缓存: {image_url[:30]}...")
                         else:
                             # 调用 LLM 描述图片（带超时控制）
@@ -317,14 +371,23 @@ class ProactiveCore:
                                     timeout=timeout
                                 )
                                 
-                                # 缓存结果
+                                # 缓存结果（带时间戳）
                                 if description:
-                                    _IMAGE_CAPTION_CACHE[image_url] = description
+                                    _IMAGE_CAPTION_CACHE[image_url] = {
+                                        "caption": description,
+                                        "timestamp": time.time()
+                                    }
+                                    # 保存到持久化存储
+                                    self._save_image_cache()
                                     logger.info(f"[MiniMaxProactive] 缓存图片描述: {image_url[:30]}...")
                             except asyncio.TimeoutError:
                                 logger.warning(f"[MiniMaxProactive] 图片转述超时，超过 {timeout} 秒")
                             except Exception as e:
                                 logger.error(f"[MiniMaxProactive] 图片转述失败: {e}")
+                        
+                        # 定期清理过期缓存（每处理10条消息清理一次）
+                        if len(processed_history) % 10 == 0:
+                            self._cleanup_expired_cache()
                         
                         if description:
                             # 替换表情包标记为转述文本
