@@ -19,6 +19,7 @@ from .utils import (
     has_image_message,
     replace_image_with_text,
 )
+from .image_caption import ImageCaptionUtils, describe_image_with_cache, CACHE_EXPIRE_SECONDS
 
 # 重新导出 src 中的辅助函数，保持向后兼容
 from ..src.helpers import (
@@ -60,6 +61,10 @@ __all__ = [
     "format_log",
     "has_image_message",
     "replace_image_with_text",
+    # image_caption
+    "ImageCaptionUtils",
+    "describe_image_with_cache",
+    "CACHE_EXPIRE_SECONDS",
     # helpers
     "extract_text_from_messages",
     "format_session_status",
