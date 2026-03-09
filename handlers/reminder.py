@@ -7,7 +7,10 @@
 作者: uuutt2023
 """
 
+from __future__ import annotations
+
 import datetime
+from typing import Any
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.base import JobLookupError
@@ -22,20 +25,20 @@ class ReminderManager:
     使用 AstrBot 官方 KV 存储。
     """
 
-    def __init__(self, plugin, scheduler: AsyncIOScheduler) -> None:
-        self.plugin = plugin
-        self.scheduler = scheduler
+    def __init__(self, plugin: Any, scheduler: AsyncIOScheduler) -> None:
+        self.plugin: Any = plugin
+        self.scheduler: AsyncIOScheduler = scheduler
 
-    async def load(self) -> dict:
+    async def load(self) -> dict[str, Any]:
         """加载提醒数据 - 使用官方 KV 存储"""
         data = await self.plugin.get_kv_data("reminders", {})
         return data if data else {}
 
-    async def save(self, data: dict) -> None:
+    async def save(self, data: dict[str, Any]) -> None:
         """保存提醒数据 - 使用官方 KV 存储"""
         await self.plugin.put_kv_data("reminders", data)
 
-    def _get_session_key(self, event) -> str:
+    def _get_session_key(self, event: Any) -> str:
         """获取会话键"""
         if hasattr(event, "unified_msg_origin"):
             return event.unified_msg_origin
@@ -43,7 +46,7 @@ class ReminderManager:
 
     async def set_reminder(
         self,
-        event,
+        event: Any,
         text: str,
         datetime_str: str,
         repeat: str | None = None,
@@ -99,7 +102,7 @@ class ReminderManager:
             return f"设置提醒失败: {str(e)}"
 
     async def delete_reminder(
-        self, event, content: str | None = None, all: str = "no"
+        self, event: Any, content: str | None = None, all: str = "no"
     ) -> str:
         """删除提醒"""
         try:
@@ -153,7 +156,7 @@ class ReminderManager:
             logger.error(f"删除提醒失败: {e}")
             return f"删除提醒失败: {str(e)}"
 
-    async def delete_reminder_by_index(self, event, index: int) -> str:
+    async def delete_reminder_by_index(self, event: Any, index: int) -> str:
         """通过索引删除提醒"""
         try:
             session_key = self._get_session_key(event)
@@ -186,7 +189,7 @@ class ReminderManager:
             logger.error(f"删除提醒失败: {e}")
             return f"删除提醒失败: {str(e)}"
 
-    async def list_reminders(self, event) -> str:
+    async def list_reminders(self, event: Any) -> str:
         """列出提醒"""
         try:
             session_key = self._get_session_key(event)

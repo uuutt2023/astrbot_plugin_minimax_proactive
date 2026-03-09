@@ -1,7 +1,7 @@
 """
-工具方法模块
+文本处理工具模块
 
-该模块提供各种工具函数，包括免打扰时段检测、文本处理等。
+提供文本处理相关的通用工具函数。
 
 作者: uuutt2023
 """
@@ -11,96 +11,13 @@ from __future__ import annotations
 import math
 import random
 import re
-from datetime import datetime
 from typing import Any
-from zoneinfo import ZoneInfo
 
 # ==================== 常量定义 ====================
-
-# 消息类型常量
-MSG_TYPE_FRIEND = "FriendMessage"
-MSG_TYPE_GROUP = "GroupMessage"
-MSG_TYPE_PRIVATE = "PrivateMessage"
-MSG_TYPE_GUILD = "GuildMessage"
-
-# 消息类型列表
-MESSAGE_TYPES = [MSG_TYPE_FRIEND, MSG_TYPE_GROUP, MSG_TYPE_PRIVATE, MSG_TYPE_GUILD]
 
 # 默认分段标点
 DEFAULT_SPLIT_WORDS = ["。", "？", "！", "~", "…"]
 DEFAULT_SPLIT_REGEX = r".*?[。？！~…\n]+|.+$"
-
-# 默认间隔
-DEFAULT_INTERVAL_MIN = 1.5
-DEFAULT_INTERVAL_MAX = 3.5
-DEFAULT_INTERVAL_STR = f"{DEFAULT_INTERVAL_MIN}, {DEFAULT_INTERVAL_MAX}"
-
-# 会话类型
-SESSION_TYPE_PRIVATE = "private"
-SESSION_TYPE_GROUP = "group"
-SESSION_TYPE_UNKNOWN = "unknown"
-
-# ==================== 免打扰时段 ====================
-
-
-def is_quiet_time(quiet_hours: str, timezone: ZoneInfo | None = None) -> bool:
-    """检查是否为免打扰时段
-
-    Args:
-        quiet_hours: 格式 "HH-HH"，如 "1-7"
-        timezone: 时区
-
-    Returns:
-        bool: 是否在免打扰时段
-    """
-    try:
-        start_h, end_h = quiet_hours.split("-")
-        start, end = int(start_h), int(end_h)
-        now = datetime.now(timezone).hour
-
-        if start <= end:
-            return start <= now < end
-        return now >= start or now < end
-    except Exception:
-        return False
-
-
-# ==================== 历史消息处理 ====================
-
-
-def sanitize_history(history: list[dict[str, Any] | object]) -> list[dict[str, Any]]:
-    """清洗历史消息，转换为标准格式
-
-    Args:
-        history: 原始历史消息列表
-
-    Returns:
-        清洗后的消息列表
-    """
-    result: list[dict[str, Any]] = []
-    for msg in history:
-        if hasattr(msg, "to_dict"):
-            msg = msg.to_dict()  # type: ignore
-        elif not isinstance(msg, dict):
-            continue
-
-        content = msg.get("content")
-        if isinstance(content, list):
-            text = ""
-            for seg in content:
-                if isinstance(seg, dict):
-                    text += seg.get("text", "")
-                elif hasattr(seg, "text"):
-                    text += getattr(seg, "text", "")
-                elif isinstance(seg, str):
-                    text += seg
-            msg["content"] = text
-        elif not isinstance(content, str):
-            msg["content"] = str(content) if content else ""
-
-        result.append(msg)
-    return result
-
 
 # ==================== 文本分段 ====================
 
@@ -144,7 +61,86 @@ def split_text(text: str, settings: dict[str, Any]) -> list[str]:
         return [s for s in segments if s.strip()]
 
 
+# ==================== 历史消息处理 ====================
+
+
+def sanitize_history(history: list[dict[str, Any] | object]) -> list[dict[str, Any]]:
+    """清洗历史消息，转换为标准格式
+
+    Args:
+        history: 原始历史消息列表
+
+    Returns:
+        清洗后的消息列表
+    """
+    result: list[dict[str, Any]] = []
+    for msg in history:
+        if hasattr(msg, "to_dict"):
+            msg = msg.to_dict()  # type: ignore
+        elif not isinstance(msg, dict):
+            continue
+
+        content = msg.get("content")
+        if isinstance(content, list):
+            text = ""
+            for seg in content:
+                if isinstance(seg, dict):
+                    text += seg.get("text", "")
+                elif hasattr(seg, "text"):
+                    text += getattr(seg, "text", "")
+                elif isinstance(seg, str):
+                    text += seg
+            msg["content"] = text
+        elif not isinstance(content, str):
+            msg["content"] = str(content) if content else ""
+
+        result.append(msg)
+    return result
+
+
+# ==================== 表情包检测 ====================
+
+
+# Emoji 正则表达式模式
+EMOJI_PATTERN = re.compile(
+    "["
+    "\U0001F600-\U0001F64F"  # emoticons
+    "\U0001F300-\U0001F5FF"  # symbols & pictographs
+    "\U0001F680-\U0001F6FF"  # transport & map symbols
+    "\U0001F700-\U0001F77F"  # alchemical symbols
+    "\U0001F780-\U0001F7FF"  # Geometric Shapes Extended
+    "\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
+    "\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+    "\U0001FA00-\U0001FA6F"  # Chess Symbols
+    "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
+    "\U00002702-\U000027B0"  # Dingbats
+    "\U000024C2-\U0001F251"
+    "]+"
+)
+
+
+def is_emoji_only(text: str) -> bool:
+    """检查是否只包含表情符号
+
+    Args:
+        text: 待检查的文本
+
+    Returns:
+        是否只包含表情符号
+    """
+    if not text:
+        return True
+    # 移除 emoji 后检查是否为空
+    cleaned = EMOJI_PATTERN.sub("", text).strip()
+    return len(cleaned) == 0
+
+
 # ==================== 发送间隔计算 ====================
+
+
+DEFAULT_INTERVAL_MIN = 1.5
+DEFAULT_INTERVAL_MAX = 3.5
+DEFAULT_INTERVAL_STR = f"{DEFAULT_INTERVAL_MIN}, {DEFAULT_INTERVAL_MAX}"
 
 
 def calc_interval(text: str, settings: dict[str, Any]) -> float:
@@ -186,6 +182,18 @@ def calc_interval(text: str, settings: dict[str, Any]) -> float:
 # 会话ID部分数量常量
 SESSION_ID_PARTS_MIN = 3
 SESSION_ID_PARTS_MAX = 3
+
+# 消息类型常量
+MSG_TYPE_FRIEND = "FriendMessage"
+MSG_TYPE_GROUP = "GroupMessage"
+MSG_TYPE_PRIVATE = "PrivateMessage"
+MSG_TYPE_GUILD = "GuildMessage"
+MESSAGE_TYPES = [MSG_TYPE_FRIEND, MSG_TYPE_GROUP, MSG_TYPE_PRIVATE, MSG_TYPE_GUILD]
+
+# 会话类型
+SESSION_TYPE_PRIVATE = "private"
+SESSION_TYPE_GROUP = "group"
+SESSION_TYPE_UNKNOWN = "unknown"
 
 
 def parse_session_id(session_id: str) -> tuple[str, str, str] | None:
@@ -275,41 +283,6 @@ def format_log(session_id: str, session_config: dict[str, Any] | None = None) ->
     return result
 
 
-# ==================== 表情包转述 ====================
-
-
-def has_image_message(messages: list[Any]) -> list[dict[str, Any]]:
-    """检查消息列表中是否包含图片消息
-
-    Args:
-        messages: 消息列表
-
-    Returns:
-        包含图片信息的列表，每项包含 image_url 和原始消息
-    """
-    image_messages = []
-    for msg in messages:
-        # 检查各种可能的图片属性
-        image_url = None
-        
-        if hasattr(msg, "image_urls"):
-            urls = msg.image_urls
-            if urls and len(urls) > 0:
-                image_url = urls[0]
-        elif hasattr(msg, "image_url"):
-            image_url = msg.image_url
-        elif hasattr(msg, "get_image_url"):
-            image_url = msg.get_image_url()
-        
-        if image_url:
-            image_messages.append({
-                "image_url": image_url,
-                "message": msg
-            })
-    
-    return image_messages
-
-
 def replace_image_with_text(
     content: str,
     replacement: str,
@@ -325,10 +298,10 @@ def replace_image_with_text(
     """
     # 常见的表情包标记
     markers = ["[表情]", "[图片]", "[image]", "[pic]", "表情", "图片"]
-    
+
     result = content
     for marker in markers:
         if marker in result:
             result = result.replace(marker, f"[{replacement}]")
-    
+
     return result

@@ -8,7 +8,9 @@ LLM 调用模块
 作者: uuutt2023
 """
 
-from typing import Any
+from __future__ import annotations
+
+from typing import Any, cast
 
 import httpx
 
@@ -18,11 +20,11 @@ from astrbot.core.provider.entities import LLMResponse
 from .decorators import debug, get_debug_logger
 
 # MiniMax API 常量
-DEFAULT_API_BASE = "https://api.minimax.chat/v1"
-DEFAULT_MODEL = "abab6.5s-chat"
-DEFAULT_TEMPERATURE = 0.7
-DEFAULT_MAX_TOKENS = 4096
-DEFAULT_TIMEOUT = 60.0
+DEFAULT_API_BASE: str = "https://api.minimax.chat/v1"
+DEFAULT_MODEL: str = "abab6.5s-chat"
+DEFAULT_TEMPERATURE: float = 0.7
+DEFAULT_MAX_TOKENS: int = 4096
+DEFAULT_TIMEOUT: float = 60.0
 
 
 class LLMCaller:
@@ -33,22 +35,22 @@ class LLMCaller:
     2. 使用自定义 MiniMax API
     """
 
-    def __init__(self, context, config: dict[str, Any]) -> None:
-        self._context = context
-        self._config = config
+    def __init__(self, context: Any, config: dict[str, Any]) -> None:
+        self._context: Any = context
+        self._config: dict[str, Any] = config
 
         # MiniMax API 配置
-        self._miniMax_config = config.get("minimax_settings", {}) or {}
-        self._api_key = self._miniMax_config.get("api_key", "")
-        self._api_base = self._miniMax_config.get("base_url", DEFAULT_API_BASE)
-        self._model = self._miniMax_config.get("model", DEFAULT_MODEL)
-        self._temperature = self._miniMax_config.get("temperature", DEFAULT_TEMPERATURE)
-        self._max_tokens = self._miniMax_config.get("max_tokens", DEFAULT_MAX_TOKENS)
-        
+        self._miniMax_config: dict[str, Any] = config.get("minimax_settings", {}) or {}
+        self._api_key: str = self._miniMax_config.get("api_key", "")
+        self._api_base: str = self._miniMax_config.get("base_url", DEFAULT_API_BASE)
+        self._model: str = self._miniMax_config.get("model", DEFAULT_MODEL)
+        self._temperature: float = self._miniMax_config.get("temperature", DEFAULT_TEMPERATURE)
+        self._max_tokens: int = self._miniMax_config.get("max_tokens", DEFAULT_MAX_TOKENS)
+
         # 调试模式 - 从配置获取并同步到全局DebugLog
-        self._debug = config.get("debug_mode", False)
+        self._debug: bool = config.get("debug_mode", False)
         get_debug_logger().enabled = self._debug
-        
+
         if self._debug:
             logger.info("[MiniMaxProactive] [DEBUG] [LLMCaller.__init__] 初始化:")
             logger.info(f"[MiniMaxProactive] [DEBUG] [LLMCaller.__init__] selected_provider: {self._config.get('selected_provider', '')}")
@@ -64,7 +66,7 @@ class LLMCaller:
     @property
     def use_astrbot_provider(self) -> bool:
         """是否使用 AstrBot 内置 Provider
-        
+
         逻辑：
         - 如果选择了AstrBot provider (selected_provider不为空)，优先使用AstrBot
         - 但如果 use_minimax_for_response 为True，则使用MiniMax API
@@ -73,18 +75,18 @@ class LLMCaller:
         has_provider = bool(self._config.get("selected_provider", ""))
         # 检查是否强制使用MiniMax
         use_minimax = self._config.get("use_minimax_for_response", False)
-        
+
         # 如果选择了AstrBot provider且没有强制使用MiniMax，则用AstrBot
         result = has_provider and not use_minimax
-        
+
         if self._debug:
             logger.info("[MiniMaxProactive] [DEBUG] [use_astrbot_provider] 计算:")
             logger.info(f"[MiniMaxProactive] [DEBUG] [use_astrbot_provider] has_provider: {has_provider}")
             logger.info(f"[MiniMaxProactive] [DEBUG] [use_astrbot_provider] use_minimax: {use_minimax}")
             logger.info(f"[MiniMaxProactive] [DEBUG] [use_astrbot_provider] result: {result}")
-        
+
         return result
-    
+
     @property
     def use_minimax_for_response(self) -> bool:
         """是否使用MiniMax API进行对话"""
@@ -93,7 +95,7 @@ class LLMCaller:
             return False
         # 如果开启了use_minimax_for_response，使用MiniMax
         return self._config.get("use_minimax_for_response", False)
-    
+
     @property
     def selected_provider(self) -> str:
         """获取用户选择的provider名称"""
@@ -142,7 +144,7 @@ class LLMCaller:
             logger.info(f"[MiniMaxProactive] [DEBUG] [chat] use_astrbot_provider: {self.use_astrbot_provider}")
             logger.info(f"[MiniMaxProactive] [DEBUG] [chat] use_minimax_for_response: {self.use_minimax_for_response}")
             logger.info(f"[MiniMaxProactive] [DEBUG] [chat] is_minimax_configured: {self.is_minimax_configured}")
-        
+
         if self.use_astrbot_provider:
             if self._debug:
                 logger.info(f"[MiniMaxProactive] [DEBUG] [chat] 使用 AstrBot Provider: {self.selected_provider}")
@@ -235,16 +237,19 @@ class LLMCaller:
         messages: list[dict[str, Any]] = []
 
         if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
+            msg = cast(dict[str, Any], {"role": "system", "content": system_prompt})
+            messages.append(msg)
 
         if history:
             for msg in history:
                 if isinstance(msg, dict):
                     role = msg.get("role", "user")
                     content = msg.get("content", "")
-                    messages.append({"role": role, "content": content})
+                    msg_dict = cast(dict[str, Any], {"role": role, "content": content})
+                    messages.append(msg_dict)
 
-        messages.append({"role": "user", "content": prompt})
+        msg_user = cast(dict[str, Any], {"role": "user", "content": prompt})
+        messages.append(msg_user)
         return messages
 
     def _parse_minimax_response(self, result: dict[str, Any]) -> str:
@@ -284,7 +289,7 @@ class LLMCaller:
                     return await self._should_respond_with_provider(
                         provider, user_text, read_air_prompt
                     )
-            
+
             # 否则使用默认方式
             result = await self.chat(
                 prompt=f"请判断以下消息是否需要回复：{user_text}",
@@ -303,13 +308,15 @@ class LLMCaller:
 
     async def _should_respond_with_provider(
         self,
-        provider,
+        provider: Any,
         user_text: str,
         read_air_prompt: str,
     ) -> bool:
         """使用指定provider判断是否需要回复"""
-        messages = [{"role": "system", "content": read_air_prompt}]
-        messages.append({"role": "user", "content": f"请判断以下消息是否需要回复：{user_text}"})
+        msg_system: dict[str, Any] = {"role": "system", "content": read_air_prompt}
+        messages: list[dict[str, Any]] = [msg_system]
+        msg_user: dict[str, Any] = {"role": "user", "content": f"请判断以下消息是否需要回复：{user_text}"}
+        messages.append(msg_user)
 
         try:
             response: LLMResponse = await provider.text_chat(
@@ -359,7 +366,7 @@ class LLMCaller:
                     return await self._describe_image_with_provider(
                         provider, image_url, prompt
                     )
-            
+
             if self.use_astrbot_provider:
                 return await self._describe_image_with_astrbot(
                     image_url, prompt, session_id
@@ -374,31 +381,33 @@ class LLMCaller:
 
     async def _describe_image_with_provider(
         self,
-        provider,
+        provider: Any,
         image_url: str,
         prompt: str,
     ) -> str | None:
         """使用指定provider描述图片"""
         try:
             # 构建多模态消息
-            messages = []
-            
+            messages: list[dict[str, Any]] = []
+
             if prompt:
-                messages.append({"role": "system", "content": prompt})
-            
-            image_content = {"type": "image_url"}
+                msg_prompt: dict[str, Any] = {"role": "system", "content": prompt}
+                messages.append(msg_prompt)
+
+            image_content: dict[str, Any] = {"type": "image_url"}
             if image_url.startswith("data:") or "," in image_url[:50]:
                 image_content["image_url"] = {"url": image_url}
             else:
                 image_content["image_url"] = {"url": image_url}
-            
-            messages.append({
+
+            msg_user: dict[str, Any] = {
                 "role": "user",
                 "content": [
                     {"type": "text", "text": "请描述这张图片的内容。"},
                     image_content
                 ]
-            })
+            }
+            messages.append(msg_user)
 
             response: LLMResponse = await provider.text_chat(
                 prompt="描述这张图片",
@@ -429,34 +438,36 @@ class LLMCaller:
                 provider = self._context.get_using_provider(selected)
             else:
                 provider = self._context.get_using_provider(session_id or "")
-            
+
             if not provider:
                 logger.warning("[MiniMaxProactive] 未找到 LLM Provider")
                 return None
 
             # 构建多模态消息
-            messages = []
-            
+            messages: list[dict[str, Any]] = []
+
             # 添加系统提示
             if prompt:
-                messages.append({"role": "system", "content": prompt})
-            
+                msg_sys: dict[str, Any] = {"role": "system", "content": prompt}
+                messages.append(msg_sys)
+
             # 添加图片消息 - 使用 URL 或 base64
-            image_content = {"type": "image_url"}
+            image_content: dict[str, Any] = {"type": "image_url"}
             if image_url.startswith("data:") or "," in image_url[:50]:
                 # base64 图片
                 image_content["image_url"] = {"url": image_url}
             else:
                 # URL 图片
                 image_content["image_url"] = {"url": image_url}
-            
-            messages.append({
+
+            msg_user: dict[str, Any] = {
                 "role": "user",
                 "content": [
                     {"type": "text", "text": "请描述这张图片的内容。"},
                     image_content
                 ]
-            })
+            }
+            messages.append(msg_user)
 
             # 调用多模态 LLM
             response: LLMResponse = await provider.text_chat(
@@ -486,23 +497,23 @@ class LLMCaller:
 
         # MiniMax 多模态 API 端点
         url = f"{self._api_base}/v1/text/chatcompletion_v2"
-        
+
         headers: dict[str, str] = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
         }
 
         # 构建多模态消息
-        messages = [
-            {"role": "system", "content": prompt},
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": "请描述这张图片的内容。"},
-                    {"type": "image_url", "image_url": {"url": image_url}}
-                ]
-            }
-        ]
+        msg_sys: dict[str, Any] = {"role": "system", "content": prompt}
+        image_content: dict[str, Any] = {"type": "image_url", "image_url": {"url": image_url}}
+        msg_user: dict[str, Any] = {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "请描述这张图片的内容。"},
+                image_content
+            ]
+        }
+        messages: list[dict[str, Any]] = [msg_sys, msg_user]
 
         payload: dict[str, Any] = {
             "model": self._model,
@@ -515,8 +526,8 @@ class LLMCaller:
             response = await client.post(url, json=payload, headers=headers)
             response.raise_for_status()
             result = response.json()
-            
+
             if "choices" in result and len(result["choices"]) > 0:
                 return result["choices"][0]["message"]["content"]
-            
+
             return None

@@ -61,9 +61,9 @@
     },
     "private_prompt": {
         "name": "主动对话提示词",
-        "description": "触发主动对话时的提示词。支持 {{unanswered_count}}（未回复次数）和 {{current_time}}（当前时间）变量",
+        "description": "触发主动对话时的提示词。支持 {{unanswered_count}}（未回复次数）和 {{current_time}}（当前时间）变量。提示词从 prompts/private_proactive.txt 文件读取",
         "type": "text",
-        "default": "请用简短亲切的方式和用户聊天。你可以主动发起话题，但不要太频繁。{{unanswered_count}}表示连续未回复的次数。"
+        "default": ""
     },
     "private_use_minimax": {
         "name": "使用 MiniMax 回复",
@@ -85,9 +85,9 @@
     },
     "private_read_air_prompt": {
         "name": "读空气提示词",
-        "description": "判断是否需要回复的提示词",
+        "description": "判断是否需要回复的提示词。提示词从 prompts/read_air.txt 文件读取",
         "type": "text",
-        "default": "你是一个聊天场合判断助手。判断用户的消息是否需要回复。规则：1. 如果是@机器人、提及机器人名字、或者直接对话，需要回复 2. 如果是闲聊且内容与机器人无关，不需要回复 3. 如果是疑问句或需要机器人提供信息，需要回复 4. 如果是单纯的表情、符号等，不需要回复。请直接输出 YES 表示需要回复，NO 表示不需要回复，不要输出其他内容。"
+        "default": ""
     },
     "private_emoji_gate": {
         "name": "表情包守门员",
@@ -175,9 +175,9 @@
     },
     "private_image_desc_prompt": {
         "name": "表情包转述提示词",
-        "description": "描述表情包/图片内容的提示词",
+        "description": "描述表情包/图片内容的提示词。提示词从 prompts/image_desc.txt 文件读取",
         "type": "text",
-        "default": "你是一个图片描述助手。请仔细观察图片中的内容，并用简洁生动的语言描述图片中的关键信息。描述要求：1. 重点描述图片的主体内容、人物动作、表情、场景等 2. 如果是表情包（meme），请描述出其中的幽默元素或含义 3. 如果是文字图片，请提取并描述文字内容 4. 保持描述简洁，不超过100字 5. 用口语化的方式描述，让聊天更自然。请直接输出图片描述，不要添加任何前缀或解释。"
+        "default": ""
     },
     "group_enable": {
         "name": "启用群聊主动对话",
@@ -187,9 +187,9 @@
     },
     "group_prompt": {
         "name": "主动对话提示词",
-        "description": "触发主动对话时的提示词。支持 {{unanswered_count}}（未回复次数）和 {{current_time}}（当前时间）变量",
+        "description": "触发主动对话时的提示词。支持 {{unanswered_count}}（未回复次数）和 {{current_time}}（当前时间）变量。提示词从 prompts/group_proactive.txt 文件读取",
         "type": "text",
-        "default": "请用简短亲切的方式在群里聊天。你可以主动发起话题，但不要太频繁。{{unanswered_count}}表示连续未回复的次数。"
+        "default": ""
     },
     "group_use_minimax": {
         "name": "使用 MiniMax 回复",
@@ -211,9 +211,9 @@
     },
     "group_read_air_prompt": {
         "name": "读空气提示词",
-        "description": "判断是否需要回复的提示词",
+        "description": "判断是否需要回复的提示词。提示词从 prompts/read_air.txt 文件读取",
         "type": "text",
-        "default": "你是一个聊天场合判断助手。判断用户的消息是否需要回复。规则：1. 如果是@机器人、提及机器人名字、或者直接对话，需要回复 2. 如果是闲聊且内容与机器人无关，不需要回复 3. 如果是疑问句或需要机器人提供信息，需要回复 4. 如果是单纯的表情、符号等，不需要回复。请直接输出 YES 表示需要回复，NO 表示不需要回复，不要输出其他内容。"
+        "default": ""
     },
     "group_emoji_gate": {
         "name": "表情包守门员",
@@ -307,9 +307,9 @@
     },
     "group_image_desc_prompt": {
         "name": "表情包转述提示词",
-        "description": "描述表情包/图片内容的提示词",
+        "description": "描述表情包/图片内容的提示词。提示词从 prompts/image_desc.txt 文件读取",
         "type": "text",
-        "default": "你是一个图片描述助手。请仔细观察图片中的内容，并用简洁生动的语言描述图片中的关键信息。描述要求：1. 重点描述图片的主体内容、人物动作、表情、场景等 2. 如果是表情包（meme），请描述出其中的幽默元素或含义 3. 如果是文字图片，请提取并描述文字内容 4. 保持描述简洁，不超过100字 5. 用口语化的方式描述，让聊天更自然。请直接输出图片描述，不要添加任何前缀或解释。"
+        "default": ""
     },
     "private_sessions": {
         "name": "私聊用户列表",
