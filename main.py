@@ -437,7 +437,7 @@ class MiniMaxProactiveChatPlugin(Star):
 
     @filter.on_llm_request(priority=50)
     async def read_air_and_decide(self, *args, **kwargs) -> None:
-        """读空气判断是否需要回复"""
+        """读空气判断是否需要回复，包含表情包守门员功能"""
         # 兼容不同版本的参数传递方式
         event = None
         request = None
@@ -458,20 +458,52 @@ class MiniMaxProactiveChatPlugin(Star):
         if not cfg:
             return
 
-        read_air_cfg = cfg.get(ReadAirKeys.READ_AIR_SETTINGS, {})
-        if not read_air_cfg.get(ReadAirKeys.ENABLE_READ_AIR, False):
-            return
-
         messages = event.get_messages()
         if not messages:
             return
 
+        # 提取用户消息文本
         user_text = ""
+        has_image = False
         for msg in messages:
             if hasattr(msg, "text"):
                 user_text += msg.text
             elif hasattr(msg, "get_text"):
                 user_text += msg.get_text() or ""
+            # 检查是否包含图片
+            if hasattr(msg, "image"):
+                has_image = True
+            elif hasattr(msg, "get_image"):
+                img = msg.get_image()
+                if img:
+                    has_image = True
+
+        # 检查是否是单独发表情包（只有图片，没有文字或只有表情符号）
+        is_emoji_only = has_image and (not user_text.strip() or self._is_emoji_only(user_text))
+
+        # 表情包守门员逻辑
+        if is_emoji_only:
+            emoji_gate_enabled = cfg.get("emoji_gate_enabled", False)
+            if emoji_gate_enabled:
+                import random
+                emoji_rate = cfg.get("emoji_gate_rate", 30)  # 默认30%
+                if random.randint(1, 100) > emoji_rate:
+                    # 概率不放行，阻止回复
+                    if request is not None:
+                        if hasattr(request, "stop_propagation"):
+                            request.stop_propagation()
+                        elif hasattr(request, "terminated"):
+                            request.terminated = True
+                    logger.info(f"[MiniMaxProactive] 表情包守门员阻止回复: {session_id}")
+                    return
+                else:
+                    # 概率放行，继续执行
+                    logger.info(f"[MiniMaxProactive] 表情包守门员放行: {session_id}")
+
+        # 原有读空气逻辑
+        read_air_cfg = cfg.get(ReadAirKeys.READ_AIR_SETTINGS, {})
+        if not read_air_cfg.get(ReadAirKeys.ENABLE_READ_AIR, False):
+            return
 
         if not user_text:
             return
@@ -507,3 +539,29 @@ class MiniMaxProactiveChatPlugin(Star):
 
         except Exception as e:
             logger.error(f"[MiniMaxProactive] 读空气判断失败: {e}")
+    
+    def _is_emoji_only(self, text: str) -> bool:
+        """检查是否只包含表情符号"""
+        if not text:
+            return True
+        # 移除非emoji字符后检查是否为空
+        import re
+        # 匹配emoji和常见表情符号
+        emoji_pattern = re.compile(
+            "["
+            "\U0001F600-\U0001F64F"  # emoticons
+            "\U0001F300-\U0001F5FF"  # symbols & pictographs
+            "\U0001F680-\U0001F6FF"  # transport & map symbols
+            "\U0001F700-\U0001F77F"  # alchemical symbols
+            "\U0001F780-\U0001F7FF"  # Geometric Shapes Extended
+            "\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
+            "\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+            "\U0001FA00-\U0001FA6F"  # Chess Symbols
+            "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
+            "\U00002702-\U000027B0"  # Dingbats
+            "\U000024C2-\U0001F251"
+            "]+"
+        )
+        # 移除空白字符后检查
+        cleaned = emoji_pattern.sub('', text).strip()
+        return len(cleaned) == 0

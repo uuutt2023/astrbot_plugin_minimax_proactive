@@ -93,6 +93,8 @@ class ConfigManager:
                 "read_air_prompt": self._config.get("private_read_air_prompt", ""),
                 "read_air_provider": self._config.get("private_read_air_provider", ""),
             },
+            "emoji_gate_enabled": self._config.get("private_emoji_gate", False),
+            "emoji_gate_rate": self._config.get("private_emoji_gate_rate", 30),
             "schedule_settings": {
                 "min_interval_minutes": self._config.get("private_min_interval", 30),
                 "max_interval_minutes": self._config.get("private_max_interval", 900),
@@ -135,6 +137,8 @@ class ConfigManager:
                 "read_air_prompt": self._config.get("group_read_air_prompt", ""),
                 "read_air_provider": self._config.get("group_read_air_provider", ""),
             },
+            "emoji_gate_enabled": self._config.get("group_emoji_gate", False),
+            "emoji_gate_rate": self._config.get("group_emoji_gate_rate", 30),
             "schedule_settings": {
                 "min_interval_minutes": self._config.get("group_min_interval", 30),
                 "max_interval_minutes": self._config.get("group_max_interval", 900),
