@@ -8,6 +8,8 @@
 
 __all__ = ["ConfigManager"]
 
+from .constants import Defaults, EmojiGateKeys
+
 
 class ConfigManager:
     """配置管理器
@@ -93,8 +95,8 @@ class ConfigManager:
                 "read_air_prompt": self._config.get("private_read_air_prompt", ""),
                 "read_air_provider": self._config.get("private_read_air_provider", ""),
             },
-            "emoji_gate_enabled": self._config.get("private_emoji_gate", False),
-            "emoji_gate_rate": self._config.get("private_emoji_gate_rate", 30),
+            EmojiGateKeys.EMOJI_GATE_ENABLED: self._config.get("private_emoji_gate", False),
+            EmojiGateKeys.EMOJI_GATE_RATE: self._config.get("private_emoji_gate_rate", Defaults.EMOJI_GATE_RATE),
             "schedule_settings": {
                 "min_interval_minutes": self._config.get("private_min_interval", 30),
                 "max_interval_minutes": self._config.get("private_max_interval", 900),
@@ -137,8 +139,8 @@ class ConfigManager:
                 "read_air_prompt": self._config.get("group_read_air_prompt", ""),
                 "read_air_provider": self._config.get("group_read_air_provider", ""),
             },
-            "emoji_gate_enabled": self._config.get("group_emoji_gate", False),
-            "emoji_gate_rate": self._config.get("group_emoji_gate_rate", 30),
+            EmojiGateKeys.EMOJI_GATE_ENABLED: self._config.get("group_emoji_gate", False),
+            EmojiGateKeys.EMOJI_GATE_RATE: self._config.get("group_emoji_gate_rate", Defaults.EMOJI_GATE_RATE),
             "schedule_settings": {
                 "min_interval_minutes": self._config.get("group_min_interval", 30),
                 "max_interval_minutes": self._config.get("group_max_interval", 900),

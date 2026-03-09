@@ -6,9 +6,13 @@
 作者: uuutt2023
 """
 
+import re
 from typing import Any
 
 from astrbot.api import logger
+
+
+# ==================== 消息处理 ====================
 
 
 def extract_text_from_messages(messages: list[Any]) -> str:
@@ -27,6 +31,25 @@ def extract_text_from_messages(messages: list[Any]) -> str:
         elif hasattr(msg, "get_text"):
             text += msg.get_text() or ""
     return text
+
+
+def has_image_in_messages(messages: list[Any]) -> bool:
+    """检查消息列表中是否包含图片
+
+    Args:
+        messages: 消息列表
+
+    Returns:
+        是否包含图片
+    """
+    for msg in messages:
+        if hasattr(msg, "image") and msg.image:
+            return True
+        if hasattr(msg, "get_image"):
+            img = msg.get_image()
+            if img:
+                return True
+    return False
 
 
 def format_session_status(proactive_enabled: bool, reminder_enabled: bool) -> str:
@@ -90,3 +113,40 @@ def check_and_stop_request(request: Any) -> bool:
         request.terminated = True
         return True
     return False
+
+
+# ==================== 表情包检测 ====================
+
+
+# Emoji 正则表达式模式
+EMOJI_PATTERN = re.compile(
+    "["
+    "\U0001F600-\U0001F64F"  # emoticons
+    "\U0001F300-\U0001F5FF"  # symbols & pictographs
+    "\U0001F680-\U0001F6FF"  # transport & map symbols
+    "\U0001F700-\U0001F77F"  # alchemical symbols
+    "\U0001F780-\U0001F7FF"  # Geometric Shapes Extended
+    "\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
+    "\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+    "\U0001FA00-\U0001FA6F"  # Chess Symbols
+    "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
+    "\U00002702-\U000027B0"  # Dingbats
+    "\U000024C2-\U0001F251"
+    "]+"
+)
+
+
+def is_emoji_only(text: str) -> bool:
+    """检查是否只包含表情符号
+
+    Args:
+        text: 待检查的文本
+
+    Returns:
+        是否只包含表情符号
+    """
+    if not text:
+        return True
+    # 移除 emoji 后检查是否为空
+    cleaned = EMOJI_PATTERN.sub('', text).strip()
+    return len(cleaned) == 0

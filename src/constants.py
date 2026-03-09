@@ -106,6 +106,16 @@ class ImageDescKeys(str, Enum):
     IMAGE_DESC_PROMPT = "image_desc_prompt"
 
 
+# ==================== 配置键 - 表情包守门员 ====================
+
+
+class EmojiGateKeys(str, Enum):
+    """表情包守门员配置键枚举"""
+
+    EMOJI_GATE_ENABLED = "emoji_gate_enabled"
+    EMOJI_GATE_RATE = "emoji_gate_rate"
+
+
 # ==================== 配置键 - LLM ====================
 
 
@@ -169,3 +179,6 @@ class Defaults:
 
     # 群聊
     GROUP_IDLE_TRIGGER_MINUTES = 10
+
+    # 表情包守门员
+    EMOJI_GATE_RATE = 30
